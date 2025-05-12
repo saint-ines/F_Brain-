@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  # --- Client Service ---
+  client:
+    build:
+      context: ./Client
+      dockerfile: dockerfile.client
+    ports:
+      - "5173:5173"  # Port typique pour Vite/React
+      - "4173:4173"  # Port de prévisualisation
+    restart: unless-stopped
+    networks:
+      - f_brain_network
+
+  # --- Server Service ---
+  server:
+    build:
+      context: ./server
+      dockerfile: dockerfile.server
+    ports:
+      - "8000:8000"  # Backend API
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - client
+    networks:
+      - f_brain_network
+
+  # --- Monitoring Service ---
+  monitoring:
+    build:
+      context: ./Monitoring
+      dockerfile: dockerfile.moni
+    ports:
+      - "9090:9090"  # Prometheus (exemple)
+      - "3000:3000"  # Grafana (exemple)
+    networks:
+      - f_brain_network
+
+  # --- Proxy (NGINX) ---
+  proxy:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./proxy/nginx.conf:/etc/nginx/nginx.conf  # À créer
+    depends_on:
+      - client
+      - server
+    networks:
+      - f_brain_network
+
+# --- Réseau Docker ---
+networks:
+  f_brain_network:
+    driver: bridge
