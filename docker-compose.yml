@@ -22,10 +22,27 @@ services:
       - "8000:8000"  # Backend API
     environment:
       - NODE_ENV=production
+      - POSTGRES_HOST=db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret  
+      - POSTGRES_DB=mydb
     depends_on:
       - client
+      - db
     networks:
       - f_brain_network
+
+  # --- PostgreSQL Service ---
+  db:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres  
+      POSTGRES_PASSWORD: secret 
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"  # Port PostgreSQL
+    networks:
+      - f_brain_networki
 
   # --- Monitoring Service ---
   monitoring:
@@ -45,10 +62,11 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./proxy/nginx.conf:/etc/nginx/nginx.conf  # À créer
+      - ./proxy/nginx.conf:/etc/nginx/nginx.conf  
     depends_on:
       - client
       - server
+      - monitoring 
     networks:
       - f_brain_network
 
