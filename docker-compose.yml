@@ -1,33 +1,40 @@
-version: '3.8'
+version: "3.9"
 
 services:
-  # --- Client Service ---
+  # --- Client Service (React + Vite) ---
   client:
     build:
       context: ./Client
       dockerfile: dockerfile.client
     ports:
-      - "5173:5173"  # Port typique pour Vite/React
-      - "4173:4173"  # Port de prévisualisation
+      - "5173:5173"  # Dev
+      - "4173:4173"  # Preview
     restart: unless-stopped
+    environment:
+      - VITE_AUTH0_DOMAIN=${AUTH0_DOMAIN}
+      - VITE_AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID}
+      - VITE_AUTH0_CALLBACK_URL=http://localhost:5173/callback
     networks:
       - f_brain_network
 
-  # --- Server Service ---
+  # --- Server Service (API Node.js + Auth0) ---
   server:
     build:
       context: ./server
       dockerfile: dockerfile.server
     ports:
-      - "8000:8000"  # Backend API
+      - "8000:8000"
+    restart: unless-stopped
     environment:
       - NODE_ENV=production
       - POSTGRES_HOST=db
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=secret  
+      - POSTGRES_PASSWORD=secret
       - POSTGRES_DB=mydb
+      - DATABASE_URL=postgres://postgres:secret@db:5432/mydb
+      - AUTH0_DOMAIN=${AUTH0_DOMAIN}
+      - AUTH0_AUDIENCE=${AUTH0_AUDIENCE}
     depends_on:
-      - client
       - db
     networks:
       - f_brain_network
@@ -36,41 +43,47 @@ services:
   db:
     image: postgres:13
     environment:
-      POSTGRES_USER: postgres  
-      POSTGRES_PASSWORD: secret 
-      POSTGRES_DB: mydb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=mydb
     ports:
-      - "5432:5432"  # Port PostgreSQL
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     networks:
-      - f_brain_networki
+      - f_brain_network
 
-  # --- Monitoring Service ---
+  # --- Monitoring (Prometheus + Grafana) ---
   monitoring:
     build:
       context: ./Monitoring
       dockerfile: dockerfile.moni
     ports:
-      - "9090:9090"  # Prometheus (exemple)
-      - "3000:3000"  # Grafana (exemple)
+      - "9090:9090"  # Prometheus
+      - "3000:3000"  # Grafana
     networks:
       - f_brain_network
 
-  # --- Proxy (NGINX) ---
+  # --- NGINX Reverse Proxy ---
   proxy:
     image: nginx:alpine
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./proxy/nginx.conf:/etc/nginx/nginx.conf  
+      - ./proxy/nginx.conf:/etc/nginx/nginx.conf
     depends_on:
       - client
       - server
-      - monitoring 
+      - monitoring
     networks:
       - f_brain_network
 
-# --- Réseau Docker ---
+# --- Volumes ---
+volumes:
+  pgdata:
+
+# --- Réseaux ---
 networks:
   f_brain_network:
     driver: bridge
