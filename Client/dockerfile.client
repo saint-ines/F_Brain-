@@ -1,17 +1,19 @@
-FROM node:18-alpine as dev
-WORKDIR /app
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
-COPY . .
-CMD ["yarn", "dev"]
+# Utilisation de base node + install des deps
+FROM node:18
 
-FROM node:18-alpine as builder
 WORKDIR /app
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+
+COPY package*.json ./
+RUN yarn install
+
 COPY . .
+
+# On reconstruit avec les variables d'env à disposition
+ENV VITE_AUTH0_DOMAIN=$VITE_AUTH0_DOMAIN
+ENV VITE_AUTH0_CLIENT_ID=$VITE_AUTH0_CLIENT_ID
+ENV VITE_AUTH0_CALLBACK_URL=$VITE_AUTH0_CALLBACK_URL
+
 RUN yarn build
 
-FROM nginx:alpine as prod
-COPY --from=builder /app/dist /usr/share/nginx/html
 EXPOSE 5173
+CMD ["yarn", "dev"]

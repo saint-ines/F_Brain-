@@ -1,4 +1,4 @@
-version: "3.9"
+
 
 services:
   # --- Client Service (React + Vite) ---
@@ -13,9 +13,14 @@ services:
     environment:
       - VITE_AUTH0_DOMAIN=${AUTH0_DOMAIN}
       - VITE_AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID}
+      - VITE_AUTH0_AUDIENCE=${AUTH0_AUDIENCE}
+      - VITE_API_URL=http://server:8000
       - VITE_AUTH0_CALLBACK_URL=http://localhost:5173/callback
+      - VITE_AUTH0_LOGOUT_URL=http://localhost:5173
     networks:
       - f_brain_network
+    depends_on:
+      - server
 
   # --- Server Service (API Node.js + Auth0) ---
   server:
@@ -27,31 +32,44 @@ services:
     restart: unless-stopped
     environment:
       - NODE_ENV=production
+      - PORT=8000
       - POSTGRES_HOST=db
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=secret
-      - POSTGRES_DB=mydb
-      - DATABASE_URL=postgres://postgres:secret@db:5432/mydb
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+      - DATABASE_URL=postgres://postgres:${DB_PASSWORD}@db:5432/${DB_NAME}
       - AUTH0_DOMAIN=${AUTH0_DOMAIN}
       - AUTH0_AUDIENCE=${AUTH0_AUDIENCE}
+      - AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID}
+      - AUTH0_CLIENT_SECRET=${AUTH0_CLIENT_SECRET}
     depends_on:
       - db
     networks:
       - f_brain_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   # --- PostgreSQL Service ---
   db:
-    image: postgres:13
+    image: postgres:13-alpine
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=secret
-      - POSTGRES_DB=mydb
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
       - f_brain_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # --- Monitoring (Prometheus + Grafana) ---
   monitoring:
@@ -63,6 +81,9 @@ services:
       - "3000:3000"  # Grafana
     networks:
       - f_brain_network
+    depends_on:
+      - server
+      - db
 
   # --- NGINX Reverse Proxy ---
   proxy:
@@ -72,6 +93,7 @@ services:
       - "443:443"
     volumes:
       - ./proxy/nginx.conf:/etc/nginx/nginx.conf
+      - ./proxy/certs:/etc/nginx/certs
     depends_on:
       - client
       - server
@@ -82,6 +104,7 @@ services:
 # --- Volumes ---
 volumes:
   pgdata:
+    driver: local
 
 # --- Réseaux ---
 networks:
