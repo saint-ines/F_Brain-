@@ -1,14 +1,14 @@
 
 
 services:
-  # --- Client Service (React + Vite) ---
+  
   client:
     build:
       context: ./Client
       dockerfile: dockerfile.client
     ports:
-      - "5173:5173"  # Dev
-      - "4173:4173"  # Preview
+      - "5173:5173"  
+      - "4173:4173"  
     restart: unless-stopped
     environment:
       - VITE_AUTH0_DOMAIN=${AUTH0_DOMAIN}
@@ -22,7 +22,7 @@ services:
     depends_on:
       - server
 
-  # --- Server Service (API Node.js + Auth0) ---
+  
   server:
     build:
       context: ./server
@@ -52,9 +52,9 @@ services:
       timeout: 10s
       retries: 3
 
-  # --- PostgreSQL Service ---
+  
   db:
-    image: postgres:13-alpine
+    image: postgres:15
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
@@ -71,14 +71,14 @@ services:
       timeout: 5s
       retries: 5
 
-  # --- Monitoring (Prometheus + Grafana) ---
+  
   monitoring:
     build:
       context: ./Monitoring
       dockerfile: dockerfile.moni
     ports:
-      - "9090:9090"  # Prometheus
-      - "3000:3000"  # Grafana
+      - "9090:9090"  
+      - "3000:3000"  
     networks:
       - f_brain_network
     depends_on:
