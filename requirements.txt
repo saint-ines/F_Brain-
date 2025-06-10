@@ -1,6 +1,6 @@
 djangorestframework==3.14.0 
 Django>=5.2.1,<6.0.0
-gunicorn
+gunicorn==20.1.0
 psycopg2-binary
 django-cors-headers
 python-dotenv
