@@ -1,0 +1,13 @@
+# Ne pas copier les dossiers et fichiers inutiles dans l'image
+node_modules
+dist
+build
+.cache
+.vscode
+.git
+.gitignore
+Dockerfile.client
+*.log
+yarn-error.log
+npm-debug.log
+.env

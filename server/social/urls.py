@@ -1,7 +1,8 @@
-
 from django.urls import path
-from .views import PostListCreateView
+from . import views
 
 urlpatterns = [
-    path('posts/', PostListCreateView.as_view()),
+    path('test-auth/', views.test_auth, name='test_auth'),
+    path('public/', views.public_endpoint, name='public'),
+  
 ]

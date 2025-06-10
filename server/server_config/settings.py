@@ -4,10 +4,12 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "unsafe-secret")
-
 DEBUG = os.environ.get("DEBUG", "True") == "True"
-
 ALLOWED_HOSTS = ["*"]
+
+
+AUTH0_DOMAIN = os.environ.get("AUTH0_DOMAIN", "dev-6knczocqqvl0i2dx.us.auth0.com")
+AUTH0_AUDIENCE = os.environ.get("AUTH0_AUDIENCE", f"https://{AUTH0_DOMAIN}/api/v2/")
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -63,11 +65,10 @@ DATABASES = {
     }
 }
 
-AUTH0_DOMAIN = os.environ.get("AUTH0_DOMAIN")
-AUTH0_AUDIENCE = os.environ.get("AUTH0_AUDIENCE")
+# CORS Settings
+CORS_ALLOW_ALL_ORIGINS = True  # Tu peux restreindre à tes domaines en prod
 
-CORS_ALLOW_ALL_ORIGINS = True
-
+# Static Files
 STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

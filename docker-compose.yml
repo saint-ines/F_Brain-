@@ -1,14 +1,11 @@
-
-
 services:
-  
   client:
     build:
       context: ./Client
       dockerfile: dockerfile.client
     ports:
-      - "5173:5173"  
-      - "4173:4173"  
+      - "5173:5173"
+      - "4173:4173"
     restart: unless-stopped
     environment:
       - VITE_AUTH0_DOMAIN=${AUTH0_DOMAIN}
@@ -22,22 +19,20 @@ services:
     depends_on:
       - server
 
-  
   server:
     build:
-      context: ./server
-      dockerfile: dockerfile.server
-    ports:
-      - "8000:8000"
+     context: ./server
+     dockerfile: dockerfile.server
     restart: unless-stopped
+    command: ["gunicorn", "fbrain.wsgi:application", "--bind", "0.0.0.0:8000"]
     environment:
       - NODE_ENV=production
       - PORT=8000
       - POSTGRES_HOST=db
-      - POSTGRES_USER=postgres
+      - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
-      - DATABASE_URL=postgres://postgres:${DB_PASSWORD}@db:5432/${DB_NAME}
+      - DATABASE_URL=postgres://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
       - AUTH0_DOMAIN=${AUTH0_DOMAIN}
       - AUTH0_AUDIENCE=${AUTH0_AUDIENCE}
       - AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID}
@@ -52,7 +47,6 @@ services:
       timeout: 10s
       retries: 3
 
-  
   db:
     image: postgres:15
     environment:
@@ -63,31 +57,30 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./init-db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     networks:
       - f_brain_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
       interval: 5s
       timeout: 5s
       retries: 5
 
-  
   monitoring:
     build:
       context: ./Monitoring
       dockerfile: dockerfile.moni
     ports:
-      - "9090:9090"  
-      - "3000:3000"  
+      - "9090:9090"  # Prometheus
+      - "3000:3000"  # Grafana
     networks:
       - f_brain_network
     depends_on:
       - server
       - db
-
-  # --- NGINX Reverse Proxy ---
   proxy:
+    build:
+      context: ./proxy
+      dockerfile: dockerfile.proxy
     image: nginx:alpine
     ports:
       - "80:80"
@@ -102,12 +95,10 @@ services:
     networks:
       - f_brain_network
 
-# --- Volumes ---
 volumes:
   pgdata:
     driver: local
 
-# --- Réseaux ---
 networks:
   f_brain_network:
     driver: bridge

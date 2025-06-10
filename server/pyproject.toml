@@ -1,18 +1,28 @@
-[project]
-name = "server"
+[tool.poetry]
+name = "fbrain"
 version = "0.1.0"
-description = ""
-authors = [
-    { name = "Your Name", email = "you@example.com" }
-]
+description = "Réseau social avec Auth0 et PostgreSQL"
+authors = ["Saintes-ines <fankeppoueme@example.com>"]
 readme = "README.md"
-requires-python = ">=3.11"
-dependencies = [
-    "django >=5.2.1,<6.0.0",
-    "gunicorn",
-    "django-cors-headers"
-]
+
+[tool.poetry.dependencies]
+python = "^3.13"
+django = "^5.2.2"
+django-cors-headers = "^4.7.0"
+djangorestframework = "^3.16.0"
+psycopg2-binary = "^2.9.10"
+python-decouple = "^3.8"
+requests = "^2.32.4"
+pyjwt = "^2.10.1"
+pillow = "^11.2.1"
+gunicorn = ">=23.0.0,<24.0.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.0"
+pytest-django = "^4.11.1"
+black = "^25.1.0"
+flake8 = "^7.2.0"
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
+requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
