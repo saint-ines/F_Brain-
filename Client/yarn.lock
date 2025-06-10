@@ -15,6 +15,25 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@auth0/auth0-react@npm:^2.3.0":
+  version: 2.3.0
+  resolution: "@auth0/auth0-react@npm:2.3.0"
+  dependencies:
+    "@auth0/auth0-spa-js": "npm:^2.1.3"
+  peerDependencies:
+    react: ^16.11.0 || ^17 || ^18 || ^19
+    react-dom: ^16.11.0 || ^17 || ^18 || ^19
+  checksum: 10c0/ef4dfde5abd64204bfbd654692b84c5e6e1f2166833874d0e6da0f2a02ff2fa1130f2e93014518bffb69fa1c3ac7901ce06bd49832f93a64c8a5bd962a4e0cdd
+  languageName: node
+  linkType: hard
+
+"@auth0/auth0-spa-js@npm:^2.1.3":
+  version: 2.2.0
+  resolution: "@auth0/auth0-spa-js@npm:2.2.0"
+  checksum: 10c0/e341eaf60b3fbed7baa8315641de084d0ca286be6ad65c97cc6c34313da41e96758a2b66dbabeacd019886c67222a0d3380a5ce3dce451252e7c54d3a76133cb
+  languageName: node
+  linkType: hard
+
 "@babel/code-frame@npm:^7.27.1":
   version: 7.27.1
   resolution: "@babel/code-frame@npm:7.27.1"
@@ -1024,6 +1043,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "client@workspace:."
   dependencies:
+    "@auth0/auth0-react": "npm:^2.3.0"
     "@eslint/js": "npm:^9.25.0"
     "@types/react": "npm:^19.1.2"
     "@types/react-dom": "npm:^19.1.2"
